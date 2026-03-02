@@ -31,6 +31,7 @@ export const RSVP_COLORS: Record<RSVPStatus, string> = {
 export const ROLE_LABELS: Record<Role, string> = {
   [Role.ADMIN]: 'Админ',
   [Role.CAPTAIN]: 'Капитан',
+  [Role.TRAINER]: 'Тренер',
   [Role.PLAYER]: 'Игрок',
 };
 

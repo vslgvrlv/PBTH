@@ -6,13 +6,25 @@ import { Phone, Shield, MoreVertical } from 'lucide-react';
 interface TeamMemberCardProps {
   member: TeamMember;
   isViewerAdmin: boolean;
+  onClick?: () => void;
 }
 
-export const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member, isViewerAdmin }) => {
+export const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member, isViewerAdmin, onClick }) => {
   const isLeader = member.role === Role.ADMIN || member.role === Role.CAPTAIN;
   
   return (
-    <div className="flex items-center justify-between p-3 mb-2 bg-pb-surface rounded-xl border border-white/5 active:bg-white/5 transition-colors">
+    <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
+      className={`flex items-center justify-between p-3 mb-2 bg-pb-surface rounded-xl border border-white/5 active:bg-white/5 transition-colors ${onClick ? 'cursor-pointer hover:border-pb-primary/50' : ''}`}
+    >
       <div className="flex items-center space-x-3 overflow-hidden">
         {/* Avatar */}
         <div className={`relative w-12 h-12 rounded-full p-[2px] ${isLeader ? 'bg-gradient-to-tr from-pb-primary to-blue-500' : 'bg-white/10'}`}>
@@ -36,6 +48,9 @@ export const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member, isViewer
              <span className="text-[10px] text-pb-subtext px-1.5 py-0.5 bg-white/5 rounded">
                 {STATUS_LABELS[member.status]}
              </span>
+             <span className="text-[10px] text-pb-subtext px-1.5 py-0.5 bg-white/5 rounded">
+                {ROLE_LABELS[member.role]}
+             </span>
           </div>
         </div>
       </div>
@@ -43,12 +58,19 @@ export const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member, isViewer
       {/* Actions */}
       <div className="flex items-center space-x-1 pl-2">
         {member.phone && (
-          <a href={`tel:${member.phone}`} className="p-2 text-pb-subtext hover:text-pb-primary transition-colors">
+          <a
+            href={`tel:${member.phone}`}
+            onClick={(e) => e.stopPropagation()}
+            className="p-2 text-pb-subtext hover:text-pb-primary transition-colors"
+          >
             <Phone size={18} />
           </a>
         )}
         {isViewerAdmin && (
-          <button className="p-2 text-pb-subtext hover:text-white transition-colors">
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="p-2 text-pb-subtext hover:text-white transition-colors"
+          >
             <MoreVertical size={18} />
           </button>
         )}

@@ -1,6 +1,7 @@
 export enum Role {
   ADMIN = 'ADMIN',
   CAPTAIN = 'CAPTAIN',
+  TRAINER = 'TRAINER',
   PLAYER = 'PLAYER'
 }
 
@@ -38,6 +39,7 @@ export interface User {
 }
 
 export interface TeamMember extends User {
+  membershipId?: string;
   role: Role;
   status: PlayerStatus;
   phone?: string;

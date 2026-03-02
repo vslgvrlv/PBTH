@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LandingView } from './views/LandingView';
-import { ViewState, Role, User, Team, Event, RSVPStatus, TeamMember, AuthStep, UserRoleOption, Transaction, TransactionType } from './types';
+import { ViewState, Role, User, Team, Event, RSVPStatus, TeamMember, AuthStep, UserRoleOption, Transaction, TransactionType, PlayerStatus } from './types';
 import { BottomNav } from './components/BottomNav';
 import { Dashboard } from './views/Dashboard';
 import { CalendarView } from './views/CalendarView';
@@ -14,6 +14,7 @@ import { FinanceView } from './views/FinanceView';
 import { PrivacyView } from './views/PrivacyView';
 import { TermsView } from './views/TermsView';
 import { SupportView } from './views/SupportView';
+import { PlayerProfileView } from './views/PlayerProfileView';
 import { RSVPModal } from './components/RSVPModal';
 import { Plus, Loader2 } from 'lucide-react';
 import { api } from './api'; // Import API
@@ -36,6 +37,7 @@ const App: React.FC = () => {
 
   // Interaction State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isRSVPModalOpen, setIsRSVPModalOpen] = useState(false);
   const [rsvpModalEvent, setRsvpModalEvent] = useState<Event | null>(null);
 
@@ -244,6 +246,8 @@ const App: React.FC = () => {
     setCurrentView('DASHBOARD');
     setUser(null);
     setActiveTeam(null);
+    setSelectedMember(null);
+    setSelectedEvent(null);
     setCalendarLink('');
     navigate('/');
   };
@@ -374,7 +378,42 @@ const App: React.FC = () => {
     setIsRSVPModalOpen(true);
   };
 
+  const handleMemberClick = (member: TeamMember) => {
+    setSelectedMember(member);
+  };
+
+  const handleAttendeeClick = (userId: string) => {
+    const fullMember = members.find((member) => member.id === userId);
+    if (fullMember) {
+      setSelectedMember(fullMember);
+      return;
+    }
+
+    const preview = selectedEvent?.attendeePreview?.find((item) => item.userId === userId);
+    if (!preview) return;
+
+    setSelectedMember({
+      id: preview.userId,
+      name: preview.name,
+      nickname: preview.nickname,
+      avatar: preview.avatar,
+      role: Role.PLAYER,
+      status: PlayerStatus.ACTIVE,
+      balance: 0,
+    });
+  };
+
   const renderContent = () => {
+    if (selectedMember) {
+      return (
+        <PlayerProfileView
+          member={selectedMember}
+          teamName={activeTeam!.name}
+          onBack={() => setSelectedMember(null)}
+        />
+      );
+    }
+
     if (selectedEvent) {
       return (
         <EventDetailView 
@@ -383,6 +422,7 @@ const App: React.FC = () => {
           onBack={() => setSelectedEvent(null)}
           onRsvp={handleRsvp}
           onAddGame={() => {}} // Not implemented in MVP backend yet
+          onAttendeeClick={handleAttendeeClick}
         />
       );
     }
@@ -423,6 +463,7 @@ const App: React.FC = () => {
             team={activeTeam!}
             members={members}
             currentUserRole={activeTeam!.role}
+            onMemberClick={handleMemberClick}
           />
         );
       case 'PROFILE':
@@ -473,14 +514,14 @@ const App: React.FC = () => {
 
     return (
       <div className="min-h-screen bg-pb-background bg-splatter bg-fixed bg-no-repeat bg-center bg-cover text-white font-sans selection:bg-pb-primary selection:text-pb-background">
-        <div className="fixed inset-0 bg-pb-background/90 -z-10 pointer-events-none"></div>
+        <div className="fixed inset-0 bg-pb-background/72 -z-10 pointer-events-none"></div>
 
         <main className="max-w-md mx-auto min-h-screen relative shadow-2xl shadow-black overflow-hidden flex flex-col">
           <div className="flex-1">
                {renderContent()}
           </div>
           
-          {isAdmin && !selectedEvent && currentView !== 'CREATE' && (
+          {isAdmin && !selectedEvent && !selectedMember && currentView !== 'CREATE' && (
               <div className="absolute bottom-24 right-4 z-50">
                   <button 
                     onClick={() => setCurrentView('CREATE')}
@@ -499,7 +540,7 @@ const App: React.FC = () => {
           onRsvp={handleRsvp}
         />
 
-        {!selectedEvent && currentView !== 'CREATE' && (
+        {!selectedEvent && !selectedMember && currentView !== 'CREATE' && (
           <BottomNav 
             currentView={currentView}
             onChangeView={setCurrentView}

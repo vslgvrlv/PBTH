@@ -1,5 +1,4 @@
-window.tailwind = window.tailwind || {};
-window.tailwind.config = {
+const pbthTailwindConfig = {
   darkMode: 'class',
   theme: {
     extend: {
@@ -20,8 +19,32 @@ window.tailwind.config = {
         }
       },
       backgroundImage: {
-        splatter: "url('https://www.transparenttextures.com/patterns/splatter.png')",
-      }
+        splatter:
+          'radial-gradient(circle at 10% 10%, rgba(0,230,118,0.12), transparent 35%), radial-gradient(circle at 90% 20%, rgba(57,255,20,0.08), transparent 30%), radial-gradient(circle at 80% 80%, rgba(0,230,118,0.07), transparent 35%)',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 180ms ease-out',
+      },
     }
   }
 };
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.tailwind = globalThis.tailwind || {};
+  globalThis.tailwind.config = pbthTailwindConfig;
+}
+
+if (typeof window !== 'undefined') {
+  window.tailwind = window.tailwind || {};
+  window.tailwind.config = pbthTailwindConfig;
+}
+
+if (typeof tailwind !== 'undefined') {
+  tailwind.config = pbthTailwindConfig;
+}

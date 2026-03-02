@@ -11,9 +11,10 @@ interface EventDetailViewProps {
   onBack: () => void;
   onRsvp: (id: string, status: RSVPStatus) => void;
   onAddGame: (eventId: string, game: Omit<Game, 'id'>) => void;
+  onAttendeeClick: (userId: string) => void;
 }
 
-export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, currentUserRole, onBack, onRsvp, onAddGame }) => {
+export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, currentUserRole, onBack, onRsvp, onAddGame, onAttendeeClick }) => {
   const Icon = getEventIcon(event.type);
   const color = EVENT_COLORS[event.type];
   
@@ -176,14 +177,19 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, current
                    <span className="text-sm text-pb-subtext">Подтвержденных участников пока нет</span>
                  )}
                  {attendeePreview.map((attendee) => (
-                   <div key={attendee.userId} className="h-10 w-10 rounded-full ring-2 ring-pb-surface bg-white/10 shrink-0 overflow-hidden">
+                   <button
+                     key={attendee.userId}
+                     type="button"
+                     onClick={() => onAttendeeClick(attendee.userId)}
+                     className="h-10 w-10 rounded-full ring-2 ring-pb-surface bg-white/10 shrink-0 overflow-hidden hover:ring-pb-primary transition-all"
+                     title={attendee.name}
+                   >
                      <img
                        src={attendee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(attendee.name)}&background=0F0F0F&color=fff`}
                        alt={attendee.name}
-                       title={attendee.name}
                        className="w-full h-full object-cover"
                      />
-                   </div>
+                   </button>
                  ))}
                  {hiddenAttendees > 0 && (
                    <div className="h-10 px-3 rounded-full ring-2 ring-pb-surface bg-white/10 text-xs text-white flex items-center justify-center shrink-0">
@@ -192,6 +198,34 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, current
                  )}
                </div>
              </div>
+
+             {attendeePreview.length > 0 && (
+               <div className="mt-3 border-t border-white/5 pt-3">
+                 <div className="text-xs text-pb-subtext uppercase tracking-wider font-bold mb-2">
+                   Кто идет
+                 </div>
+                 <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
+                   {attendeePreview.map((attendee) => (
+                     <button
+                       key={`row-${attendee.userId}`}
+                       type="button"
+                       onClick={() => onAttendeeClick(attendee.userId)}
+                       className="w-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-pb-primary/40 rounded-xl px-3 py-2 flex items-center gap-3 text-left transition-colors"
+                     >
+                       <img
+                         src={attendee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(attendee.name)}&background=0F0F0F&color=fff`}
+                         alt={attendee.name}
+                         className="w-8 h-8 rounded-full object-cover"
+                       />
+                       <div className="min-w-0">
+                         <div className="text-sm font-semibold text-white truncate">{attendee.name}</div>
+                         <div className="text-xs text-pb-primary truncate">@{attendee.nickname}</div>
+                       </div>
+                     </button>
+                   ))}
+                 </div>
+               </div>
+             )}
           </div>
         </div>
       </div>

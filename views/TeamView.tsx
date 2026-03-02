@@ -7,9 +7,10 @@ interface TeamViewProps {
   team: Team;
   members: TeamMember[];
   currentUserRole: Role;
+  onMemberClick: (member: TeamMember) => void;
 }
 
-export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRole }) => {
+export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRole, onMemberClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showCopied, setShowCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'ROSTER' | 'STATS'>('ROSTER');
@@ -35,6 +36,7 @@ export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRo
   const renderRoster = () => {
     // Grouping
     const leaders = filteredMembers.filter(m => m.role === Role.ADMIN || m.role === Role.CAPTAIN);
+    const staff = filteredMembers.filter(m => m.role === Role.TRAINER);
     const activePlayers = filteredMembers.filter(m => m.role === Role.PLAYER && m.status === PlayerStatus.ACTIVE);
     const others = filteredMembers.filter(m => m.role === Role.PLAYER && m.status !== PlayerStatus.ACTIVE);
 
@@ -46,7 +48,27 @@ export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRo
               <Shield size={12} className="mr-1" /> Руководство
             </div>
             {leaders.map(member => (
-              <TeamMemberCard key={member.id} member={member} isViewerAdmin={isAdminOrCaptain} />
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isViewerAdmin={isAdminOrCaptain}
+                onClick={() => onMemberClick(member)}
+              />
+            ))}
+          </section>
+        )}
+        {staff.length > 0 && (
+          <section>
+            <div className="flex items-center text-pb-subtext text-xs font-bold uppercase tracking-wider mb-2">
+              <Star size={12} className="mr-1" /> Тренерский штаб
+            </div>
+            {staff.map(member => (
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isViewerAdmin={isAdminOrCaptain}
+                onClick={() => onMemberClick(member)}
+              />
             ))}
           </section>
         )}
@@ -56,7 +78,12 @@ export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRo
               <Users size={12} className="mr-1" /> Основной состав
             </div>
             {activePlayers.map(member => (
-              <TeamMemberCard key={member.id} member={member} isViewerAdmin={isAdminOrCaptain} />
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isViewerAdmin={isAdminOrCaptain}
+                onClick={() => onMemberClick(member)}
+              />
             ))}
           </section>
         )}
@@ -66,7 +93,12 @@ export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRo
               <span className="w-1.5 h-1.5 rounded-full bg-pb-subtext mr-2"></span> Резерв / Другие
             </div>
             {others.map(member => (
-              <TeamMemberCard key={member.id} member={member} isViewerAdmin={isAdminOrCaptain} />
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isViewerAdmin={isAdminOrCaptain}
+                onClick={() => onMemberClick(member)}
+              />
             ))}
           </section>
         )}
@@ -86,7 +118,11 @@ export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRo
         {sortedByMVP.map(member => {
             const stats = member.stats || { attendanceRate: 0, eventsAttended: 0, totalEvents: 0, mvpCount: 0, matchesPlayed: 0 };
             return (
-                <div key={member.id} className="bg-pb-surface p-4 rounded-xl border border-white/5">
+                <button
+                    key={member.id}
+                    onClick={() => onMemberClick(member)}
+                    className="w-full text-left bg-pb-surface p-4 rounded-xl border border-white/5 hover:border-pb-primary/40 transition-colors"
+                >
                     <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center space-x-3">
                             <img src={member.avatar} className="w-10 h-10 rounded-full" alt={member.name} />
@@ -128,7 +164,7 @@ export const TeamView: React.FC<TeamViewProps> = ({ team, members, currentUserRo
                              </div>
                         </div>
                     </div>
-                </div>
+                </button>
             );
         })}
       </div>

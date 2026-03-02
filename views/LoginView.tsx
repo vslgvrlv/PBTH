@@ -12,11 +12,19 @@ interface LoginViewProps {
 export const LoginView: React.FC<LoginViewProps> = ({ onLogin: _onLogin, onSelectRole, availableRoles }) => {
   const [step, setStep] = useState<'LOGIN' | 'SELECT'>('LOGIN');
   const [isLoading, setIsLoading] = useState(false);
+  const isLocalDev =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
 
   const handleTelegramLogin = () => {
     setIsLoading(true);
     sessionStorage.setItem('pbth:post-auth-app', '1');
     window.location.assign('/api/v1/auth/telegram/direct');
+  };
+
+  const handleLocalDevLogin = () => {
+    sessionStorage.setItem('pbth:post-auth-app', '1');
+    window.location.assign('/api/v1/auth/dev/login?telegramId=9000000103&redirectTo=%2Fapp');
   };
 
   if (step === 'SELECT') {
@@ -89,6 +97,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin: _onLogin, onSelec
                </>
             )}
           </button>
+          {isLocalDev && (
+            <button
+              onClick={handleLocalDevLogin}
+              className="w-full mt-3 bg-pb-surface border border-pb-primary/40 text-pb-primary font-bold py-3 rounded-xl hover:bg-pb-primary/10 transition-colors"
+            >
+              Dev вход без Telegram
+            </button>
+          )}
           <p className="text-xs text-center text-pb-subtext mt-6 opacity-60">
             Нажимая войти, вы принимаете условия использования и политику конфиденциальности.
           </p>
