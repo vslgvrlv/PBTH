@@ -24,37 +24,9 @@
 
     <title>PaintBall Team Hub</title>
 
-    <script>
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-            },
-            colors: {
-              pb: {
-                primary: '#00E676',
-                secondary: '#39FF14',
-                background: '#0F0F0F',
-                surface: '#1E1E2E',
-                warning: '#FF6D00',
-                highlight: '#FFEA00',
-                danger: '#FF1744',
-                text: '#FFFFFF',
-                subtext: '#A0A0B0'
-              }
-            },
-            backgroundImage: {
-              'splatter': "url('https://www.transparenttextures.com/patterns/splatter.png')",
-            }
-          }
-        }
-      };
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="/tailwind.runtime.config.js?v=20260302-5"></script>
+    <script src="/api/v1/vendor/tailwindcss.js?v=20260302-1"></script>
+    <script src="/api/v1/vendor/telegram-web-app.js?v=20260302-1"></script>
 
     <style>
       body {
