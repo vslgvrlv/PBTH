@@ -93,6 +93,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, compact = false, on
           {event.rsvpStatus === RSVPStatus.CONFIRMED && <CheckCircle size={16} className="text-pb-primary" />}
           {event.rsvpStatus === RSVPStatus.DECLINED && <XCircle size={16} className="text-pb-danger" />}
           {event.rsvpStatus === RSVPStatus.PENDING && <HelpCircle size={16} className="text-pb-warning" />}
+          {event.rsvpStatus === RSVPStatus.UNANSWERED && <HelpCircle size={16} className="text-pb-subtext" />}
         </div>
 
         <h3 className="text-lg font-bold text-white mb-1 leading-tight">{event.title}</h3>
@@ -111,7 +112,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, compact = false, on
         </div>
 
         {/* Action Buttons for Pending - stopPropagation needed to not trigger card click */}
-        {!compact && event.rsvpStatus === RSVPStatus.PENDING && (
+        {!compact && (event.rsvpStatus === RSVPStatus.PENDING || event.rsvpStatus === RSVPStatus.UNANSWERED) && (
           <div className="flex gap-2 mt-2 border-t border-white/10 pt-3">
              <button 
                 onPointerDown={(e) => e.stopPropagation()} // Stop long press propagation

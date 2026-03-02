@@ -22,6 +22,7 @@ export const EVENT_LABELS: Record<EventType, string> = {
 };
 
 export const RSVP_COLORS: Record<RSVPStatus, string> = {
+  [RSVPStatus.UNANSWERED]: 'text-pb-subtext border-white/30',
   [RSVPStatus.PENDING]: 'text-pb-warning border-pb-warning',
   [RSVPStatus.CONFIRMED]: 'text-pb-primary border-pb-primary',
   [RSVPStatus.DECLINED]: 'text-pb-danger border-pb-danger',

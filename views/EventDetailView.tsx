@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Event, RSVPStatus, EventType, Role, Game } from '../types';
 import { EVENT_COLORS, EVENT_LABELS, getEventIcon } from '../constants';
-import { ChevronLeft, MapPin, Clock, Users, DollarSign, Check, X, HelpCircle, Swords, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, MapPin, Clock, Users, DollarSign, Check, X, HelpCircle, Swords, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -23,6 +23,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, current
 
   const isAdminOrCaptain = currentUserRole === Role.ADMIN || currentUserRole === Role.CAPTAIN;
   const isTournament = event.type === EventType.TOURNAMENT || event.type === EventType.CHAMPIONSHIP;
+  const attendeePreview = event.attendeePreview || [];
+  const hiddenAttendees = Math.max(0, event.attendeesCount - attendeePreview.length);
 
   const handleStatusChange = (status: RSVPStatus) => {
     onRsvp(event.id, status);
@@ -75,6 +77,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, current
                  {format(event.startDate, 'd MMMM yyyy, HH:mm', { locale: ru })}
                </span>
             </div>
+            {event.teamTimezone && (
+              <div className="mt-2 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-pb-subtext">
+                TZ команды: {event.teamTimezone}
+              </div>
+            )}
           </div>
 
           {/* Description */}
@@ -163,15 +170,26 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, current
                 </div>
                 {event.maxAttendees && <span className="text-xs text-pb-subtext">из {event.maxAttendees}</span>}
              </div>
-             {/* Mock avatars */}
-             <div className="flex -space-x-2 overflow-hidden py-1">
-               {[1,2,3,4,5].map(i => (
-                 <div key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-pb-surface bg-white/10 flex items-center justify-center text-[10px] font-bold text-white">
-                    P{i}
-                 </div>
-               ))}
-               <div className="inline-block h-8 w-8 rounded-full ring-2 ring-pb-surface bg-pb-surface border border-white/10 flex items-center justify-center text-[10px] text-white">
-                 +{event.attendeesCount - 5}
+             <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+               <div className="flex items-center gap-2 min-w-max">
+                 {attendeePreview.length === 0 && (
+                   <span className="text-sm text-pb-subtext">Подтвержденных участников пока нет</span>
+                 )}
+                 {attendeePreview.map((attendee) => (
+                   <div key={attendee.userId} className="h-10 w-10 rounded-full ring-2 ring-pb-surface bg-white/10 shrink-0 overflow-hidden">
+                     <img
+                       src={attendee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(attendee.name)}&background=0F0F0F&color=fff`}
+                       alt={attendee.name}
+                       title={attendee.name}
+                       className="w-full h-full object-cover"
+                     />
+                   </div>
+                 ))}
+                 {hiddenAttendees > 0 && (
+                   <div className="h-10 px-3 rounded-full ring-2 ring-pb-surface bg-white/10 text-xs text-white flex items-center justify-center shrink-0">
+                     +{hiddenAttendees}
+                   </div>
+                 )}
                </div>
              </div>
           </div>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Event } from '../types';
 import { EVENT_COLORS } from '../constants';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, getISODay, addDays } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { EventCard } from '../components/EventCard';
+import { sortEventsByStart } from '../lib/events';
 
 interface CalendarViewProps {
   events: Event[];
@@ -18,10 +19,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ events, onEventClick
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const leadPadding = getISODay(monthStart) - 1;
+  const trailPadding = (7 - ((leadPadding + monthDays.length) % 7)) % 7;
+  const gridDays = [
+    ...Array.from({ length: leadPadding }, (_, idx) => addDays(monthStart, -(leadPadding - idx))),
+    ...monthDays,
+    ...Array.from({ length: trailPadding }, (_, idx) => addDays(monthEnd, idx + 1)),
+  ];
 
   // Get events for the selected date
-  const selectedEvents = events.filter(e => isSameDay(e.startDate, selectedDate));
+  const selectedEvents = sortEventsByStart(events.filter(e => isSameDay(e.startDate, selectedDate)));
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -51,12 +59,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ events, onEventClick
           </div>
         ))}
         
-        {/* Empty cells filler for start of month alignment could be added here, simplified for demo */}
-        
-        {days.map((day) => {
+        {gridDays.map((day) => {
            const dayEvents = events.filter(e => isSameDay(e.startDate, day));
            const isSelected = isSameDay(day, selectedDate);
            const isCurrentDay = isToday(day);
+           const isCurrentMonth = day.getMonth() === currentDate.getMonth();
 
            return (
              <button
@@ -66,6 +73,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ events, onEventClick
                   h-12 rounded-xl flex flex-col items-center justify-center relative transition-colors
                   ${isSelected ? 'bg-pb-primary text-pb-background font-bold shadow-lg shadow-green-500/20' : 'bg-pb-surface/50 text-white hover:bg-pb-surface'}
                   ${isCurrentDay && !isSelected ? 'border border-pb-primary text-pb-primary' : ''}
+                  ${!isCurrentMonth ? 'opacity-45' : ''}
                 `}
              >
                <span className="text-sm">{format(day, 'd')}</span>

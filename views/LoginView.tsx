@@ -9,21 +9,14 @@ interface LoginViewProps {
   availableRoles: UserRoleOption[];
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLogin, onSelectRole, availableRoles }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLogin: _onLogin, onSelectRole, availableRoles }) => {
   const [step, setStep] = useState<'LOGIN' | 'SELECT'>('LOGIN');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleTelegramLogin = () => {
     setIsLoading(true);
-    // Simulate API delay
-    setTimeout(() => {
-      setIsLoading(false);
-      if (availableRoles.length > 1) {
-        setStep('SELECT');
-      } else {
-        onLogin();
-      }
-    }, 1500);
+    sessionStorage.setItem('pbth:post-auth-app', '1');
+    window.location.assign('/api/v1/auth/telegram/direct');
   };
 
   if (step === 'SELECT') {

@@ -15,6 +15,7 @@ export enum EventType {
 }
 
 export enum RSVPStatus {
+  UNANSWERED = 'UNANSWERED',
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
   DECLINED = 'DECLINED'
@@ -49,6 +50,7 @@ export interface Team {
   name: string;
   shortCode: string;
   logo?: string;
+  timezone?: string;
   role: Role;
   budget: number; // New: Team treasury
 }
@@ -60,12 +62,23 @@ export interface Game {
   score?: string;
 }
 
+export interface AttendeePreview {
+  userId: string;
+  name: string;
+  nickname: string;
+  avatar?: string;
+}
+
 export interface Event {
   id: string;
   teamId: string;
+  teamTimezone?: string;
+  financeState?: 'NOT_CALCULATED' | 'COLLECTING' | 'CLOSED';
   type: EventType;
   title: string;
   description?: string;
+  startAt?: string;
+  endAt?: string;
   startDate: Date;
   endDate?: Date;
   location?: string;
@@ -75,6 +88,7 @@ export interface Event {
   cost?: number;
   isConflict?: boolean;
   schedule?: Game[];
+  attendeePreview?: AttendeePreview[];
 }
 
 // --- NEW FINANCE TYPES ---

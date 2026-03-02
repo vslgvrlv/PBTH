@@ -1,20 +1,18 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# PBTH Frontend
 
-# Run and deploy your AI Studio app
+React + Vite frontend for PaintBall Team Hub.
 
-This contains everything you need to run your app locally.
+## Scripts
 
-View your app in AI Studio: https://ai.studio/apps/02b6c79e-b507-4134-81b5-afe8eefd21a5
+- `npm run dev` - start local dev server
+- `npm run build` - production build
+- `npm run typecheck` - TypeScript checks
+- `npm run lint` - lint gate (type-safe baseline)
+- `npm run test:unit` - vitest unit tests
+- `npm run test:e2e` - playwright e2e tests (uses `E2E_BASE_URL`, default `http://127.0.0.1:3000`)
+- `npm run gen:api-types` - generate OpenAPI-based type definitions from backend
 
-## Run Locally
+## API baseline
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- Primary API path: `/api/v1/*`
+- Legacy `/api/*` remains temporarily for compatibility.

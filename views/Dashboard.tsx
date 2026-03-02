@@ -2,6 +2,8 @@ import React from 'react';
 import { User, Event, Team, RSVPStatus } from '../types';
 import { EventCard } from '../components/EventCard';
 import { Bell, ChevronDown } from 'lucide-react';
+import { EVENT_COLORS, EVENT_LABELS } from '../constants';
+import { filterFutureEvents, getCountdownParts } from '../lib/events';
 
 interface DashboardProps {
   user: User;
@@ -13,11 +15,25 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, activeTeam, events, onRsvp, onEventClick, onEventLongPress }) => {
-  const pendingEvents = events.filter(e => e.rsvpStatus === RSVPStatus.PENDING);
-  const upcomingEvents = events.filter(e => e.rsvpStatus !== RSVPStatus.PENDING).slice(0, 3);
+  const [nowTs, setNowTs] = React.useState(() => Date.now());
 
-  // Get next event for banner
-  const nextEvent = events[0];
+  React.useEffect(() => {
+    const id = window.setInterval(() => setNowTs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const futureEvents = React.useMemo(() => filterFutureEvents(events, nowTs), [events, nowTs]);
+
+  const nextEvent = futureEvents[0] || null;
+  const pendingEvents = futureEvents.filter((e) => e.rsvpStatus === RSVPStatus.PENDING || e.rsvpStatus === RSVPStatus.UNANSWERED);
+  const upcomingEvents = futureEvents
+    .filter((e) => e.rsvpStatus !== RSVPStatus.PENDING && e.rsvpStatus !== RSVPStatus.UNANSWERED)
+    .slice(0, 3);
+
+  const timeLeft = React.useMemo(() => {
+    if (!nextEvent) return { days: '00', hours: '00', mins: '00' };
+    return getCountdownParts(nextEvent.startDate, nowTs);
+  }, [nextEvent, nowTs]);
 
   return (
     <div className="pb-24 pt-4 px-4 space-y-6 animate-fade-in">
@@ -58,23 +74,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, activeTeam, events, 
               <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-pb-primary/10 rounded-full blur-3xl"></div>
               
               <span className="text-pb-primary text-xs font-bold uppercase tracking-wider mb-2 block">Ближайшее событие</span>
+              <span
+                className="inline-flex mb-2 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide bg-black/30 border border-white/10"
+                style={{ color: EVENT_COLORS[nextEvent.type] }}
+              >
+                {EVENT_LABELS[nextEvent.type]}
+              </span>
               <h1 className="text-2xl font-black text-white mb-1 leading-tight">{nextEvent.title}</h1>
               <p className="text-pb-subtext mb-4">{nextEvent.location || 'Место не указано'}</p>
 
-              {/* Timer Mock */}
               <div className="flex space-x-4 mb-4">
                 <div>
-                   <span className="text-2xl font-mono font-bold text-white">02</span>
+                   <span className="text-2xl font-mono font-bold text-white">{timeLeft.days}</span>
                    <span className="text-[10px] text-pb-subtext block uppercase">Дня</span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white/20">:</div>
                 <div>
-                   <span className="text-2xl font-mono font-bold text-white">14</span>
+                   <span className="text-2xl font-mono font-bold text-white">{timeLeft.hours}</span>
                    <span className="text-[10px] text-pb-subtext block uppercase">Часов</span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white/20">:</div>
                  <div>
-                   <span className="text-2xl font-mono font-bold text-white">35</span>
+                   <span className="text-2xl font-mono font-bold text-white">{timeLeft.mins}</span>
                    <span className="text-[10px] text-pb-subtext block uppercase">Мин</span>
                 </div>
               </div>
