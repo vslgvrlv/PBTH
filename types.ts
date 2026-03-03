@@ -62,6 +62,7 @@ export interface Game {
   time: string;
   opponent: string;
   score?: string;
+  pitZone?: "NEAR" | "FAR";
 }
 
 export interface AttendeePreview {

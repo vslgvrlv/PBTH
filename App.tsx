@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LandingView } from './views/LandingView';
-import { ViewState, Role, User, Team, Event, RSVPStatus, TeamMember, AuthStep, UserRoleOption, Transaction, TransactionType, PlayerStatus } from './types';
+import { ViewState, Role, User, Team, Event, RSVPStatus, TeamMember, AuthStep, UserRoleOption, Transaction, TransactionType, PlayerStatus, Game } from './types';
 import { BottomNav } from './components/BottomNav';
 import { Dashboard } from './views/Dashboard';
 import { CalendarView } from './views/CalendarView';
@@ -378,11 +378,84 @@ const App: React.FC = () => {
     setIsRSVPModalOpen(true);
   };
 
+  const handleAddGame = async (eventId: string, game: Omit<Game, 'id'>) => {
+    const createdGame: Game = {
+      id: `g-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      time: game.time,
+      opponent: game.opponent,
+      score: game.score,
+      pitZone: game.pitZone,
+    };
+
+    let nextScheduleForApi: Array<{ time: string; opponent: string; score?: string; pitZone?: 'NEAR' | 'FAR' }> = [];
+
+    const applyAddGame = (sourceEvent: Event): Event => {
+      const nextSchedule = [...(sourceEvent.schedule || []), createdGame].sort((a, b) =>
+        a.time.localeCompare(b.time)
+      );
+      nextScheduleForApi = nextSchedule.map((item) => ({
+        time: item.time,
+        opponent: item.opponent,
+        score: item.score,
+        pitZone: item.pitZone,
+      }));
+      return { ...sourceEvent, schedule: nextSchedule };
+    };
+
+    setEvents((prev) =>
+      prev.map((event) => (event.id === eventId ? applyAddGame(event) : event))
+    );
+
+    setSelectedEvent((prev) => {
+      if (!prev || prev.id !== eventId) return prev;
+      return applyAddGame(prev);
+    });
+
+    await api.updateEventSchedule(eventId, nextScheduleForApi);
+  };
+
+  const handleUpdateGame = async (
+    eventId: string,
+    gameId: string,
+    patch: { time: string; opponent: string; score?: string; pitZone?: 'NEAR' | 'FAR' }
+  ) => {
+    let nextScheduleForApi: Array<{ time: string; opponent: string; score?: string; pitZone?: 'NEAR' | 'FAR' }> = [];
+
+    const applyGamePatch = (sourceEvent: Event): Event => {
+      const nextSchedule = (sourceEvent.schedule || []).map((game) =>
+        game.id === gameId
+          ? { ...game, time: patch.time, opponent: patch.opponent, score: patch.score, pitZone: patch.pitZone }
+          : game
+      );
+      nextScheduleForApi = nextSchedule.map((game) => ({
+        time: game.time,
+        opponent: game.opponent,
+        score: game.score,
+        pitZone: game.pitZone,
+      }));
+      return { ...sourceEvent, schedule: nextSchedule };
+    };
+
+    setEvents((prev) =>
+      prev.map((event) => (event.id === eventId ? applyGamePatch(event) : event))
+    );
+
+    setSelectedEvent((prev) => {
+      if (!prev || prev.id !== eventId) return prev;
+      return applyGamePatch(prev);
+    });
+
+    await api.updateEventSchedule(eventId, nextScheduleForApi);
+  };
+
   const handleMemberClick = (member: TeamMember) => {
     setSelectedMember(member);
   };
 
-  const handleAttendeeClick = (userId: string) => {
+  const handleAttendeeClick = (
+    userId: string,
+    seed?: { name: string; nickname: string; avatar?: string; role?: 'CAPTAIN' | 'TRAINER' | 'PLAYER' }
+  ) => {
     const fullMember = members.find((member) => member.id === userId);
     if (fullMember) {
       setSelectedMember(fullMember);
@@ -390,14 +463,20 @@ const App: React.FC = () => {
     }
 
     const preview = selectedEvent?.attendeePreview?.find((item) => item.userId === userId);
-    if (!preview) return;
+    const fallback = seed || (preview ? { name: preview.name, nickname: preview.nickname, avatar: preview.avatar } : undefined);
+    if (!fallback) return;
 
     setSelectedMember({
-      id: preview.userId,
-      name: preview.name,
-      nickname: preview.nickname,
-      avatar: preview.avatar,
-      role: Role.PLAYER,
+      id: userId,
+      name: fallback.name,
+      nickname: fallback.nickname,
+      avatar: fallback.avatar,
+      role:
+        fallback.role === 'CAPTAIN'
+          ? Role.CAPTAIN
+          : fallback.role === 'TRAINER'
+            ? Role.TRAINER
+            : Role.PLAYER,
       status: PlayerStatus.ACTIVE,
       balance: 0,
     });
@@ -421,7 +500,8 @@ const App: React.FC = () => {
           currentUserRole={activeTeam!.role}
           onBack={() => setSelectedEvent(null)}
           onRsvp={handleRsvp}
-          onAddGame={() => {}} // Not implemented in MVP backend yet
+          onAddGame={handleAddGame}
+          onUpdateGame={handleUpdateGame}
           onAttendeeClick={handleAttendeeClick}
         />
       );

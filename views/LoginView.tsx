@@ -22,9 +22,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin: _onLogin, onSelec
     window.location.assign('/api/v1/auth/telegram/direct');
   };
 
-  const handleLocalDevLogin = () => {
+  const handleLocalDevLogin = (telegramId: string) => {
     sessionStorage.setItem('pbth:post-auth-app', '1');
-    window.location.assign('/api/v1/auth/dev/login?telegramId=9000000103&redirectTo=%2Fapp');
+    window.location.assign(`/api/v1/auth/dev/login?telegramId=${encodeURIComponent(telegramId)}&redirectTo=%2Fapp`);
   };
 
   if (step === 'SELECT') {
@@ -98,12 +98,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin: _onLogin, onSelec
             )}
           </button>
           {isLocalDev && (
-            <button
-              onClick={handleLocalDevLogin}
-              className="w-full mt-3 bg-pb-surface border border-pb-primary/40 text-pb-primary font-bold py-3 rounded-xl hover:bg-pb-primary/10 transition-colors"
-            >
-              Dev вход без Telegram
-            </button>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleLocalDevLogin('9000000101')}
+                className="bg-pb-surface border border-pb-primary/40 text-pb-primary font-bold py-3 rounded-xl hover:bg-pb-primary/10 transition-colors"
+              >
+                Dev капитан
+              </button>
+              <button
+                onClick={() => handleLocalDevLogin('9000000103')}
+                className="bg-pb-surface border border-white/20 text-pb-subtext font-bold py-3 rounded-xl hover:bg-white/10 transition-colors"
+              >
+                Dev игрок
+              </button>
+            </div>
           )}
           <p className="text-xs text-center text-pb-subtext mt-6 opacity-60">
             Нажимая войти, вы принимаете условия использования и политику конфиденциальности.

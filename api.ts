@@ -97,6 +97,31 @@ export const api = {
     });
   },
 
+  async updateEventSchedule(
+    eventId: string,
+    schedule: Array<{ time: string; opponent: string; score?: string; pitZone?: 'NEAR' | 'FAR' }>
+  ) {
+    return request(`/events/${eventId}`, {
+      method: 'PATCH',
+      body: { scope: 'single', schedule },
+    });
+  },
+
+  async getEventAttendees(eventId: string): Promise<{
+    eventId: string;
+    attendees: Array<{
+      userId: string;
+      name: string;
+      nickname: string;
+      avatar?: string;
+      role: 'CAPTAIN' | 'TRAINER' | 'PLAYER';
+      memberStatus: 'ACTIVE' | 'INJURED' | 'RESERVE' | 'VACATION';
+      rsvpStatus: 'UNANSWERED' | 'PENDING' | 'CONFIRMED' | 'DECLINED';
+    }>;
+  }> {
+    return request(`/events/${eventId}/attendees`);
+  },
+
   async rsvp(eventId: string, userId: string, status: RSVPStatus) {
     return request('/rsvp', {
       method: 'POST',
